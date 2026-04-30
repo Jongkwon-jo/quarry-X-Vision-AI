@@ -3,9 +3,5 @@ opencv-python>=4.8.0
 numpy>=1.24.0
 scipy>=1.10.0
 easyocr>=1.7.0
-# PaddleOCR (선택 - 앙상블 사용 시 필요)
-# paddlepaddle>=2.5.0  # CPU
-# paddlepaddle-gpu>=2.5.0  # GPU
-# paddleocr>=2.7.0
 pandas>=2.0.0
 tqdm>=4.65.0
