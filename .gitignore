@@ -1,5 +1,3 @@
 venv
-dataset
-scripts/quarry-x-object-detection-1/test
-scripts/quarry-x-object-detection-1/train
-scripts/quarry-x-object-detection-1/vaild
+.env
+*.pyc
