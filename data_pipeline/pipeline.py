@@ -142,9 +142,9 @@ class DataPipeline:
         """⑦ FTP 학습 서버 전송."""
         self.logger.info('=' * 60)
         self.logger.info('⑦ FTP 학습 서버 전송')
-        if remote_subdir is None:
-            # 데이터셋 폴더명을 그대로 사용
-            remote_subdir = download.location.name
+        # if remote_subdir is None:
+        #     # 데이터셋 폴더명을 그대로 사용
+        #     remote_subdir = download.location.name
         return self.ftp_sync.upload_directory(
             local_root=download.location,
             remote_subdir=remote_subdir,

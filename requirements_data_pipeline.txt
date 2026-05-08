@@ -1,0 +1,5 @@
+roboflow>=1.1.0
+paramiko>=3.0.0
+tqdm>=4.65.0
+# 선택: 환경변수 .env 로드용
+python-dotenv>=1.0.0

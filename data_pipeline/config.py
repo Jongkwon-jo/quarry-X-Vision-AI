@@ -45,13 +45,14 @@ class RoboflowConfig:
     """④ Roboflow 업로드 + ⑥ 다운로드 설정."""
     api_key: str = ''  # 환경변수에서 로드
     workspace_name: str = 'jongkwons-workspace'
-    project_name: str = '20260428'
+    project_name: str = 'quarry-x-vision-ai'
     project_type: str = 'object-detection'
     upload_workers: int = 10
     
     # 다운로드 시 사용할 데이터셋 버전과 형식
-    download_version: int = 3
+    download_version: int = 1
     download_format: str = 'yolo26'
+    download_location: Optional[str] = None  # None이면 기본 위치에 다운로드
     
     def validate(self) -> None:
         if not self.api_key:

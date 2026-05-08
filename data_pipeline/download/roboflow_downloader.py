@@ -34,6 +34,7 @@ class RoboflowDownloader:
         """
         version = self.config.download_version
         fmt = self.config.download_format
+        location = self.config.download_location
         
         self.logger.info(
             f'다운로드 시작: {self.config.project_name} v{version} ({fmt})'
@@ -41,7 +42,7 @@ class RoboflowDownloader:
         
         project = self.rf.workspace(self.config.workspace_name) \
                          .project(self.config.project_name)
-        dataset = project.version(version).download(fmt)
+        dataset = project.version(version).download(model_format=fmt, location=location, overwrite=True)
         
         location = Path(dataset.location)
         self.logger.info(f'다운로드 완료: {location}')

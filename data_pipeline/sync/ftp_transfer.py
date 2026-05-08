@@ -16,6 +16,8 @@ from ..utils import get_logger
 
 class FTPTransfer:
     """FTP를 통해 학습 서버로 디렉토리/파일 전송."""
+
+    SUB_SETS = ('train', 'valid', 'test')
     
     def __init__(self, config: FTPConfig, verbose: bool = True):
         self.config = config
@@ -49,11 +51,38 @@ class FTPTransfer:
             except error_perm:
                 ftp.mkd(current)
                 ftp.cwd(current)
+
+    def _ftp_rmtree(self, ftp: FTP, path: str) -> None:
+        """업로드 전에 기존 폴더 삭제"""
+        try:
+            ftp.cwd(path)
+        except Exception:
+            return  # 폴더 없음
+
+        file_list = ftp.nlst()
+
+        for name in file_list:
+            full_path = f"{path}/{name}"
+            try:
+                ftp.cwd(full_path)
+                ftp.cwd("..")
+                self._ftp_rmtree(ftp, full_path)
+            except Exception:
+                ftp.delete(full_path)
+
+        ftp.rmd(path)
+
+    def _clear_remote_subsets(self, ftp: FTP, remote_base: str) -> None:
+        """remote_base 하위의 subset 폴더(train/valid/test)만 삭제."""
+        for subset in self.SUB_SETS:
+            remote_subset_path = f'{remote_base}/{subset}'
+            self._ftp_rmtree(ftp, remote_subset_path)
     
     def upload_directory(
         self,
         local_root: Path,
         remote_subdir: str = '',
+        clear_remote_before_upload: bool = True,
     ) -> FTPTransferResult:
         """로컬 디렉토리 전체를 학습 서버로 업로드.
         
@@ -61,6 +90,7 @@ class FTPTransfer:
             local_root: 업로드할 로컬 디렉토리
             remote_subdir: remote_base_dir 하위에 추가할 서브 경로
                           (보통 데이터셋 버전 디렉토리명)
+            clear_remote_before_upload: 업로드 전에 기존 원격 폴더 삭제 여부
         
         Returns:
             FTPTransferResult
@@ -96,6 +126,12 @@ class FTPTransfer:
         
         ftp = self._connect()
         try:
+            if clear_remote_before_upload:
+                try:
+                    self._clear_remote_subsets(ftp, remote_base)
+                except Exception as e:
+                    self.logger.warning(f'기존 원격 폴더 삭제 실패: {remote_base} ({e})')
+
             for local_path in iterator:
                 relative = local_path.relative_to(local_root).as_posix()
                 remote_path = f'{remote_base}/{relative}'
