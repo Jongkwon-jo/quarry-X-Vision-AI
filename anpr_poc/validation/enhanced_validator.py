@@ -184,10 +184,27 @@ class EnhancedPlateValidator(PlateValidator):
     def _parse_plate(plate_text: str) -> Optional[Tuple[int, str, str, int]]:
         """번호판 텍스트 → (차종숫자, 한글, 일련번호, 자릿수) 분해.
         
-        7자리(12가3456) 또는 8자리(123가4567) 형식 지원.
+        지원 형식:
+            - 7자리(12가3456): 차종 2자리 + 한글 + 일련번호 4자리
+            - 8자리(123가4567): 차종 3자리 + 한글 + 일련번호 4자리
+            - 지역명 + 7/8자리(서울12가3456 / 대구06라5245):
+                  앞 2자 지역명 제거 후 본문 파싱
+        
+        지역명은 검증의 부수 정보이므로 차종 분류에 영향을 주지 않도록
+        본문 부분만 파싱한다. 지역명의 유효성은 별도로 is_valid_region()
+        으로 검사 가능.
         """
-        # 한글 위치 찾기 (정확히 1개여야 정상)
-        match = re.match(r'^(\d{2,3})([가-힣])(\d{4})$', plate_text)
+        # 1. 본문 부분 추출 (지역명이 있으면 제거)
+        from ..config import is_valid_region
+        body = plate_text
+        if len(plate_text) >= 9:
+            # 앞 2자가 유효한 지역명이면 본문만 추출
+            potential_region = plate_text[:2]
+            if is_valid_region(potential_region):
+                body = plate_text[2:]
+        
+        # 2. 본문 파싱
+        match = re.match(r'^(\d{2,3})([가-힣])(\d{4})$', body)
         if not match:
             return None
         
